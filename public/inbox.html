@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReachInbox Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex h-screen">
+  <!-- Sidebar -->
+  <div class="w-64 bg-white shadow p-4">
+    <h1 class="text-xl font-bold mb-4">ReachInbox</h1>
+    <!-- Account/Folder Filters -->
+    <div id="filters" class="mb-4">
+      <select id="accountFilter" class="border p-1 rounded w-full mb-2">
+        <option value="">All Accounts</option>
+      </select>
+      <select id="folderFilter" class="border p-1 rounded w-full">
+        <option value="">All Folders</option>
+      </select>
+    </div>
+    <!-- Search -->
+    <input type="text" id="searchInput" placeholder="Search emails..." class="border p-2 rounded w-full mb-2" />
+    <button id="searchBtn" class="bg-blue-500 text-white p-2 w-full rounded">Search</button>
+    <!-- Email list -->
+    <div id="emailList" class="mt-4 overflow-y-auto h-3/4"></div>
+  </div>
+
+  <!-- Main Content / Email Viewer -->
+  <div class="flex-1 p-4 overflow-auto">
+    <h2 id="emailSubject" class="text-xl font-semibold mb-2">Select an email</h2>
+    <div id="emailMeta" class="text-sm text-gray-600 mb-4"></div>
+    <div id="emailBody" class="bg-white p-4 rounded shadow mb-4"></div>
+    <div id="suggestedReply" class="bg-green-50 p-4 rounded shadow"></div>
+  </div>
+
+  <script>
+    async function fetchEmails() {
+      const account = document.getElementById('accountFilter').value;
+      const folder = document.getElementById('folderFilter').value;
+      const q = document.getElementById('searchInput').value;
+      const params = new URLSearchParams({ account, folder, q });
+      const res = await fetch(`/api/emails/search?${params}`);
+      const data = await res.json();
+      const list = document.getElementById('emailList');
+      list.innerHTML = '';
+      data.results.forEach(email => {
+        const div = document.createElement('div');
+        div.className = 'p-2 border-b cursor-pointer hover:bg-gray-100';
+        div.innerHTML = `<strong>${email.subject}</strong> <span class="text-sm text-gray-500">${email.category || ''}</span>`;
+        div.onclick = async () => {
+          document.getElementById('emailSubject').innerText = email.subject;
+          document.getElementById('emailMeta').innerText = `From: ${email.from} | Folder: ${email.folder} | Account: ${email.account}`;
+          document.getElementById('emailBody').innerText = email.body;
+          // fetch suggested reply
+          const replyRes = await fetch('/api/reply/suggest', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ emailText: email.body })
+          });
+          const replyData = await replyRes.json();
+          document.getElementById('suggestedReply').innerText = replyData.suggestion?.suggestion || '';
+        };
+        list.appendChild(div);
+      });
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', fetchEmails);
+    document.getElementById('accountFilter').addEventListener('change', fetchEmails);
+    document.getElementById('folderFilter').addEventListener('change', fetchEmails);
+
+    // Initial fetch
+    fetchEmails();
+  </script>
+</body>
+</html>
