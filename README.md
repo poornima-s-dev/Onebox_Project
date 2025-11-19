@@ -69,7 +69,13 @@ npm run dev
 
 ## Demo
 [OneBox Demo](https://drive.google.com/file/d/1BKa12OhYhVJyJJBUxNsWDg1z9geKSWxM/view)
+
+
 <img width="1920" height="1080" alt="Screenshot (125)" src="https://github.com/user-attachments/assets/3fd6434b-0de8-4284-a4fa-ea0ad1d99415" />
+
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/65c1f7e0-6ca4-4841-84e0-1b5565173aaa" />
+
 
 
 ## Credits
